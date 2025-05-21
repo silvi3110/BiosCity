@@ -3,6 +3,9 @@ import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { RouterModule } from '@angular/router';
 
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from 'src/firebaseClient';
+
 @Component({
   selector: 'app-home',
   standalone: true,
@@ -12,35 +15,26 @@ import { RouterModule } from '@angular/router';
 })
 export class HomePage {
   userName = 'Silvana';
+  reportes: any[] = [];
 
-  reportes = [
-    {
-      titulo: 'Jaguar andino',
-      fecha: '2025-05-16',
-      estado: 'Crítico',
-    },
-    {
-      titulo: 'Colibrí violeta',
-      fecha: '2025-05-14',
-      estado: 'Estable',
-    },
-    {
-      titulo: 'Oso jukumari',
-      fecha: '2025-05-10',
-      estado: 'Peligro',
-    },
-  ];
+  constructor() {
+    this.cargarReportes();
+  }
+
+  async cargarReportes() {
+    const snapshot = await getDocs(collection(db, 'noticias'));
+    this.reportes = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+  }
 
   getColor(estado: string): string {
     switch (estado.toLowerCase()) {
-      case 'crítico':
-        return 'danger';
-      case 'peligro':
-        return 'warning';
-      case 'estable':
-        return 'success';
-      default:
-        return 'medium';
+      case 'crítico': return 'danger';
+      case 'peligro': return 'warning';
+      case 'estable': return 'success';
+      default: return 'medium';
     }
   }
 }
